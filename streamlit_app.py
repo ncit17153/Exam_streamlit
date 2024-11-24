@@ -1,89 +1,95 @@
-# Save this as `app.py` in your GitHub repository
 
-import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import streamlit as st
 
-# Load the data
-filename = "https://raw.githubusercontent.com/ncit17153/Exam_streamlit/refs/heads/main/Automobile.csv"
-headers = [
-    "symboling", "normalized-losses", "make", "fuel-type", "aspiration",
-    "num-of-doors", "body-style", "drive-wheels", "engine-location",
-    "wheel-base", "length", "width", "height", "curb-weight", "engine-type",
-    "num-of-cylinders", "engine-size", "fuel-system", "bore", "stroke",
-    "compression-ratio", "horsepower", "peak-rpm", "city-mpg", "highway-mpg", "price"
-]
-df = pd.read_csv(filename, names=headers)
+# Load the data from GitHub
+url = 'https://raw.githubusercontent.com/ncit17153/Exam_streamlit/refs/heads/main/Automobile.csv'
+df = pd.read_csv(url)
 
-# Title of the app
-st.title("Automobile Data Analysis")
+# Display the title of the app
+st.title('Automobile Data Analysis')
 
-# Show the dataframe
-if st.checkbox("Show Raw Data"):
-    st.write(df)
+# Display the dataset
+st.subheader('Dataset Preview')
+st.write(df.head())
 
-# Handle missing values
+# Replace "?" with NaN for better handling
 df.replace("?", pd.NA, inplace=True)
-numeric_columns = ["normalized-losses", "bore", "stroke", "horsepower", "peak-rpm", "price"]
+
+# Display data after replacing "?" with NaN
+st.subheader('Dataset After Handling Missing Values')
+st.write(df.head())
+
+# Check for missing values
+missing_values = df.isnull().sum()
+
+# Display missing values
+st.subheader('Missing Values in Columns')
+st.write(missing_values)
+
+# Fill missing numeric values with the column mean
+numeric_columns = ["normalized_losses", "bore", "stroke", "horsepower", "peak_rpm", "price"]
 for col in numeric_columns:
     df[col] = pd.to_numeric(df[col], errors='coerce')  # Convert to numeric
-    df[col] = df[col].fillna(df[col].mean())  # Assign back after filling NaN
+    df[col] = df[col].fillna(df[col].mean())  # Fill NaN with mean
 
-categorical_columns = ["num-of-doors"]
+# Fill missing categorical values with mode
+categorical_columns = ["num_of_doors"]
 for col in categorical_columns:
     df[col] = df[col].fillna(df[col].mode()[0])
 
+# Display updated missing values count
+st.subheader('Missing Values After Imputation')
+st.write(df.isnull().sum())
+
 # Calculate the mean value for the "normalized-losses" column
-avg_norm_loss = df["normalized-losses"].astype("float").mean(axis=0)
-st.write(f"Average of normalized-losses: {avg_norm_loss:.2f}")
+avg_norm_loss = df["normalized_losses"].astype("float").mean(axis=0)
+st.subheader('Average of Normalized Losses')
+st.write(f"Average of normalized_losses: {avg_norm_loss}")
 
 # Visualization 1: Distribution of car prices
-st.subheader("Distribution of Car Prices")
+st.subheader('Distribution of Car Prices')
 plt.figure(figsize=(8, 5))
 sns.histplot(df['price'], kde=True, color='blue')
 plt.title('Distribution of Car Prices')
 plt.xlabel('Price')
 plt.ylabel('Frequency')
-st.pyplot()
+st.pyplot(plt)
 
 # Average price by body style and fuel type
-st.subheader("Average Price by Body Style and Fuel Type")
-pivot = df.pivot_table(values='price', index='body-style', columns='fuel-type', aggfunc='mean')
+pivot = df.pivot_table(values='price', index='body_style', columns='fuel_type', aggfunc='mean')
+st.subheader('Average Price by Body Style and Fuel Type')
+plt.figure(figsize=(8, 5))
 sns.heatmap(pivot, annot=True, fmt=".0f", cmap='YlGnBu')
 plt.title('Average Price by Body Style and Fuel Type')
-st.pyplot()
+st.pyplot(plt)
 
 # Visualization 2: Scatter plot of horsepower vs. price
-st.subheader("Horsepower vs. Price")
+st.subheader('Horsepower vs. Price')
 plt.figure(figsize=(8, 5))
 sns.scatterplot(x='horsepower', y='price', data=df, color='red')
 plt.title('Horsepower vs. Price')
 plt.xlabel('Horsepower')
 plt.ylabel('Price')
-st.pyplot()
+st.pyplot(plt)
 
 # Visualization 3: Count of cars by fuel type
-st.subheader("Count of Cars by Fuel Type")
+st.subheader('Count of Cars by Fuel Type')
 plt.figure(figsize=(6, 4))
-sns.countplot(x='fuel-type', data=df, palette='Set2')
+sns.countplot(x='fuel_type', data=df, palette='Set2')
 plt.title('Count of Cars by Fuel Type')
 plt.xlabel('Fuel Type')
 plt.ylabel('Count')
-st.pyplot()
+st.pyplot(plt)
 
 # Visualization 4: Price distribution by body style
-st.subheader("Price Distribution by Body Style")
+st.subheader('Price Distribution by Body Style')
 plt.figure(figsize=(8, 5))
-sns.boxplot(x='body-style', y='price', data=df, palette='Set3')
+sns.boxplot(x='body_style', y='price', data=df, palette='Set3')
 plt.title('Price Distribution by Body Style')
 plt.xlabel('Body Style')
 plt.ylabel('Price')
-st.pyplot()
+st.pyplot(plt)
 
-# Check if there are any NaN values in each column
-st.subheader("Missing Data Check")
-missing_data = df.isnull().sum()
-st.write(missing_data)
-
-# Optionally add more interactive widgets here as needed
